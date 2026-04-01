@@ -29,7 +29,7 @@ Incremental ingestion from ServiceNow into a Fabric Lakehouse using the **Micros
 
 ### Pipeline Flow (per table, inside ForEach)
 
-![Pipeline Flow - ForEach with GetWatermark → Copy ServiceNow Data → Update Watermark](images/pipeline-flow.png)
+![Pipeline Flow - ForEach with GetWatermark → Copy ServiceNow Data → Update Watermark](images/pipeline.png)
 
 ```
 ┌──────────────────┐     ┌─────────────────────────┐     ┌──────────────────┐
