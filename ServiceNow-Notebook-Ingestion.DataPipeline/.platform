@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "ServiceNow-Notebook-Ingestion"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "6a4fcd90-5125-a23a-4943-a3654c4a6714"
+  }
+}

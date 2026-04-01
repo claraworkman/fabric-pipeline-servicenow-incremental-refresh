@@ -1,0 +1,138 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "items": {
+            "value": "@pipeline().parameters.tables",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "TridentNotebook",
+              "typeProperties": {
+                "notebookId": "1c574114-bba6-9461-4f75-3461866824e9",
+                "workspaceId": "00000000-0000-0000-0000-000000000000"
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "watermark check",
+              "dependsOn": []
+            },
+            {
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "ServiceNowSource",
+                  "expression": {
+                    "type": "Nary",
+                    "operators": [
+                      ">="
+                    ],
+                    "operands": [
+                      {
+                        "type": "Field",
+                        "value": "sys_updated_on"
+                      },
+                      {
+                        "type": "Constant",
+                        "value": {
+                          "value": "@activity('watermark check').output.result.exitValue",
+                          "type": "Expression"
+                        }
+                      }
+                    ]
+                  },
+                  "datasetSettings": {
+                    "type": "ServiceNowObject",
+                    "typeProperties": {
+                      "tableName": "incident"
+                    },
+                    "schema": [],
+                    "externalReferences": {
+                      "connection": "2777c6e7-123e-43e5-aef8-de9ed815763b"
+                    },
+                    "annotations": []
+                  }
+                },
+                "sink": {
+                  "type": "LakehouseTableSink",
+                  "tableActionOption": "Upsert",
+                  "applyVOrder": false,
+                  "upsertSettings": {
+                    "keys": [
+                      "sys_id"
+                    ]
+                  },
+                  "datasetSettings": {
+                    "type": "LakehouseTable",
+                    "typeProperties": {
+                      "table": "@{item().tableName}"
+                    },
+                    "schema": [],
+                    "linkedService": {
+                      "name": "noteboo_servicenow",
+                      "properties": {
+                        "type": "Lakehouse",
+                        "typeProperties": {
+                          "artifactId": "0f351f15-bb63-bd81-4c13-ecb3aca8a206",
+                          "workspaceId": "00000000-0000-0000-0000-000000000000",
+                          "rootFolder": "Tables"
+                        },
+                        "annotations": []
+                      }
+                    },
+                    "annotations": []
+                  }
+                },
+                "translator": {
+                  "type": "TabularTranslator",
+                  "typeConversion": true,
+                  "typeConversionSettings": {
+                    "allowDataTruncation": true,
+                    "treatBooleanAsNumber": false
+                  }
+                },
+                "enableStaging": false
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 0,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "copy servicenow tables",
+              "dependsOn": [
+                {
+                  "activity": "watermark check",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "name": "loop through tables",
+        "dependsOn": []
+      }
+    ],
+    "parameters": {
+      "tables": {
+        "type": "array",
+        "defaultValue": [
+          {
+            "tableName": "incident"
+          }
+        ]
+      }
+    }
+  }
+}

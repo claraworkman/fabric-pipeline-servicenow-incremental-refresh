@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "watermark-tracker"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "1c574114-bba6-9461-4f75-3461866824e9"
+  }
+}
