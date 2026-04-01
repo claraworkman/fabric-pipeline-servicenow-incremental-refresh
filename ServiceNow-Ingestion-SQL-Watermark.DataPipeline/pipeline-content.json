@@ -4,6 +4,7 @@
       {
         "type": "ForEach",
         "typeProperties": {
+          "isSequential": true,
           "items": {
             "value": "@pipeline().parameters.tables",
             "type": "Expression"
@@ -79,7 +80,7 @@
                   "datasetSettings": {
                     "type": "ServiceNowObject",
                     "typeProperties": {
-                      "tableName": "incident"
+                      "tableName": "@{item().tableName}"
                     },
                     "schema": [
                       {
