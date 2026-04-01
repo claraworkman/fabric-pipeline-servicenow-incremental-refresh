@@ -29,6 +29,8 @@ Incremental ingestion from ServiceNow into a Fabric Lakehouse using the **Micros
 
 ### Pipeline Flow (per table, inside ForEach)
 
+![Pipeline Flow - ForEach with GetWatermark → Copy ServiceNow Data → Update Watermark](images/pipeline-flow.png)
+
 ```
 ┌──────────────────┐     ┌─────────────────────────┐     ┌──────────────────┐
 │  1. Lookup       │     │  2. Copy Activity        │     │  3. Stored Proc  │
@@ -78,7 +80,7 @@ GetWatermark ──(Succeeded + Failed)──► CopyServiceNowData ──(Succe
 | `ServiceNow-Ingestion-SQL-Watermark.DataPipeline/` | Data Pipeline | The main incremental ingestion pipeline |
 | `watermark-servicenow.SQLDatabase/` | SQL Database | Watermark tracking table and stored procedure |
 | `servicenow_data.Lakehouse/` | Lakehouse | Destination for ServiceNow data |
-| `noteboo_servicenow.Lakehouse/` | Lakehouse | Supporting Lakehouse |
+| `noteboo_servicenow.Lakehouse/` | Lakehouse | Alternative notebook-based Lakehouse |
 | `watermark-tracker.Notebook/` | Notebook | Alternative notebook-based watermark approach |
 | `ServiceNow-Notebook-Ingestion.DataPipeline/` | Data Pipeline | Alternative notebook-based pipeline |
 

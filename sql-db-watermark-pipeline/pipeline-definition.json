@@ -1,0 +1,333 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "watermark-servicenow": {
+      "type": "string"
+    },
+    "https://dev186044.service-now.com admin": {
+      "type": "string"
+    },
+    "servicenow_data": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "ServiceNow-Ingestion-SQL-Watermark",
+      "type": "pipelines",
+      "apiVersion": "2018-06-01",
+      "properties": {
+        "description": "Created by fab",
+        "activities": [
+          {
+            "name": "Looping Through Tables",
+            "type": "ForEach",
+            "dependsOn": [],
+            "typeProperties": {
+              "items": {
+                "value": "@pipeline().parameters.tables",
+                "type": "Expression"
+              },
+              "activities": [
+                {
+                  "name": "GetWatermark",
+                  "type": "Lookup",
+                  "dependsOn": [],
+                  "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                  },
+                  "typeProperties": {
+                    "source": {
+                      "type": "FabricSqlDatabaseSource",
+                      "sqlReaderQuery": {
+                        "value": "SELECT ISNULL(CONVERT(VARCHAR(19), watermark_value, 120), '1970-01-01 00:00:00') AS watermark FROM dbo.watermark_tracking WHERE table_name = '@{item().tableName}'",
+                        "type": "Expression"
+                      },
+                      "queryTimeout": "02:00:00",
+                      "partitionOption": "None"
+                    },
+                    "firstRowOnly": true,
+                    "datasetSettings": {
+                      "annotations": [],
+                      "connectionSettings": {
+                        "name": "watermark-servicenow",
+                        "properties": {
+                          "annotations": [],
+                          "type": "FabricSqlDatabase",
+                          "typeProperties": {
+                            "workspaceId": "30b4a580-14af-4752-8037-254926ff6c2c",
+                            "artifactId": "[parameters('watermark-servicenow')]"
+                          },
+                          "externalReferences": {
+                            "connection": "3bbcd20d-eccb-4101-bbf9-53c3d7484654"
+                          }
+                        }
+                      },
+                      "type": "FabricSqlDatabaseTable",
+                      "schema": [],
+                      "typeProperties": {}
+                    }
+                  }
+                },
+                {
+                  "name": "Copy ServiceNow Data",
+                  "description": "Copy ServiceNow Data",
+                  "type": "Copy",
+                  "dependsOn": [
+                    {
+                      "activity": "GetWatermark",
+                      "dependencyConditions": [
+                        "Succeeded",
+                        "Failed"
+                      ]
+                    }
+                  ],
+                  "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                  },
+                  "typeProperties": {
+                    "source": {
+                      "type": "ServiceNowSource",
+                      "expression": {
+                        "type": "Nary",
+                        "operators": [">="],
+                        "operands": [
+                          {
+                            "type": "Field",
+                            "value": "sys_updated_on"
+                          },
+                          {
+                            "type": "Constant",
+                            "value": "@if(equals(activity('GetWatermark').status, 'Succeeded'), activity('GetWatermark').output.firstRow.watermark, '1970-01-01 00:00:00')"
+                          }
+                        ]
+                      },
+                      "datasetSettings": {
+                        "annotations": [],
+                        "type": "ServiceNowObject",
+                        "schema": [
+                          {"name": "child_incidents", "type": "integer"},
+                          {"name": "sys_class_name", "type": "sys_class_name"},
+                          {"name": "resolved_at", "type": "glide_date_time"},
+                          {"name": "wf_activity", "type": "reference"},
+                          {"name": "sys_domain_path", "type": "domain_path"},
+                          {"name": "problem_id", "type": "reference"},
+                          {"name": "caller_id", "type": "reference"},
+                          {"name": "subcategory", "type": "string"},
+                          {"name": "contract", "type": "reference"},
+                          {"name": "reopened_time", "type": "glide_date_time"},
+                          {"name": "assignment_group", "type": "reference"},
+                          {"name": "approval", "type": "string"},
+                          {"name": "calendar_duration", "type": "glide_duration"},
+                          {"name": "knowledge", "type": "boolean"},
+                          {"name": "correlation_display", "type": "string"},
+                          {"name": "sys_id", "type": "GUID"},
+                          {"name": "short_description", "type": "string"},
+                          {"name": "company", "type": "reference"},
+                          {"name": "approval_set", "type": "glide_date_time"},
+                          {"name": "opened_by", "type": "reference"},
+                          {"name": "contact_type", "type": "string"},
+                          {"name": "made_sla", "type": "boolean"},
+                          {"name": "sys_updated_on", "type": "glide_date_time"},
+                          {"name": "work_notes_list", "type": "glide_list"},
+                          {"name": "parent_incident", "type": "reference"},
+                          {"name": "parent", "type": "reference"},
+                          {"name": "priority", "type": "integer"},
+                          {"name": "close_notes", "type": "string"},
+                          {"name": "reassignment_count", "type": "integer"},
+                          {"name": "due_date", "type": "glide_date_time"},
+                          {"name": "order", "type": "integer"},
+                          {"name": "sys_created_on", "type": "glide_date_time"},
+                          {"name": "description", "type": "string"},
+                          {"name": "impact", "type": "integer"},
+                          {"name": "closed_at", "type": "glide_date_time"},
+                          {"name": "group_list", "type": "glide_list"},
+                          {"name": "activity_due", "type": "due_date"},
+                          {"name": "business_impact", "type": "string"},
+                          {"name": "severity", "type": "integer"},
+                          {"name": "reopened_by", "type": "reference"},
+                          {"name": "notify", "type": "integer"},
+                          {"name": "comments_and_work_notes", "type": "journal_list"},
+                          {"name": "universal_request", "type": "reference"},
+                          {"name": "task_effective_number", "type": "string"},
+                          {"name": "route_reason", "type": "integer"},
+                          {"name": "hold_reason", "type": "integer"},
+                          {"name": "expected_start", "type": "glide_date_time"},
+                          {"name": "upon_reject", "type": "string"},
+                          {"name": "work_start", "type": "glide_date_time"},
+                          {"name": "upon_approval", "type": "string"},
+                          {"name": "close_code", "type": "string"},
+                          {"name": "rejection_goto", "type": "reference"},
+                          {"name": "work_end", "type": "glide_date_time"},
+                          {"name": "delivery_task", "type": "reference"},
+                          {"name": "delivery_plan", "type": "reference"},
+                          {"name": "service_offering", "type": "reference"},
+                          {"name": "rfc", "type": "reference"},
+                          {"name": "incident_state", "type": "integer"},
+                          {"name": "calendar_stc", "type": "integer"},
+                          {"name": "origin_table", "type": "table_name"},
+                          {"name": "comments", "type": "journal_input"},
+                          {"name": "urgency", "type": "integer"},
+                          {"name": "opened_at", "type": "glide_date_time"},
+                          {"name": "watch_list", "type": "glide_list"},
+                          {"name": "sla_due", "type": "due_date"},
+                          {"name": "sys_mod_count", "type": "integer"},
+                          {"name": "assigned_to", "type": "reference"},
+                          {"name": "escalation", "type": "integer"},
+                          {"name": "time_worked", "type": "timer"},
+                          {"name": "additional_assignee_list", "type": "glide_list"},
+                          {"name": "correlation_id", "type": "string"},
+                          {"name": "number", "type": "string"},
+                          {"name": "cmdb_ci", "type": "reference"},
+                          {"name": "approval_history", "type": "journal"},
+                          {"name": "business_duration", "type": "glide_duration"},
+                          {"name": "location", "type": "reference"},
+                          {"name": "user_input", "type": "user_input"},
+                          {"name": "sys_updated_by", "type": "string"},
+                          {"name": "resolved_by", "type": "reference"},
+                          {"name": "reopen_count", "type": "integer"},
+                          {"name": "active", "type": "boolean"},
+                          {"name": "state", "type": "integer"},
+                          {"name": "work_notes", "type": "journal_input"},
+                          {"name": "closed_by", "type": "reference"},
+                          {"name": "follow_up", "type": "glide_date_time"},
+                          {"name": "sys_domain", "type": "domain_id"},
+                          {"name": "sys_created_by", "type": "string"},
+                          {"name": "cause", "type": "string"},
+                          {"name": "variables", "type": "variables"},
+                          {"name": "business_stc", "type": "integer"},
+                          {"name": "origin_id", "type": "document_id"},
+                          {"name": "caused_by", "type": "reference"},
+                          {"name": "business_service", "type": "reference"},
+                          {"name": "category", "type": "string"}
+                        ],
+                        "typeProperties": {
+                          "tableName": "incident"
+                        },
+                        "externalReferences": {
+                          "connection": "[parameters('https://dev186044.service-now.com admin')]"
+                        }
+                      }
+                    },
+                    "sink": {
+                      "type": "LakehouseTableSink",
+                      "tableActionOption": "Upsert",
+                      "upsertSettings": {
+                        "keys": ["sys_id"]
+                      },
+                      "applyVOrder": true,
+                      "datasetSettings": {
+                        "annotations": [],
+                        "linkedService": {
+                          "name": "servicenow_data",
+                          "properties": {
+                            "annotations": [],
+                            "type": "Lakehouse",
+                            "typeProperties": {
+                              "workspaceId": "30b4a580-14af-4752-8037-254926ff6c2c",
+                              "artifactId": "[parameters('servicenow_data')]",
+                              "rootFolder": "Tables"
+                            }
+                          }
+                        },
+                        "type": "LakehouseTable",
+                        "schema": [],
+                        "typeProperties": {
+                          "table": "@{item().tableName}"
+                        }
+                      }
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                      "type": "TabularTranslator",
+                      "typeConversion": true,
+                      "typeConversionSettings": {
+                        "allowDataTruncation": true,
+                        "treatBooleanAsNumber": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "name": "Update Watermark",
+                  "type": "SqlServerStoredProcedure",
+                  "dependsOn": [
+                    {
+                      "activity": "Copy ServiceNow Data",
+                      "dependencyConditions": [
+                        "Succeeded"
+                      ]
+                    }
+                  ],
+                  "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                  },
+                  "typeProperties": {
+                    "storedProcedureName": "[[dbo].[usp_UpdateWatermark]",
+                    "storedProcedureParameters": {
+                      "tableName": {
+                        "value": {
+                          "value": "@{item().tableName}",
+                          "type": "Expression"
+                        },
+                        "type": "String"
+                      },
+                      "watermarkValue": {
+                        "value": {
+                          "value": "@{utcNow('yyyy-MM-dd HH:mm:ss')}",
+                          "type": "Expression"
+                        },
+                        "type": "String"
+                      }
+                    }
+                  },
+                  "connectionSettings": {
+                    "name": "watermark-servicenow",
+                    "properties": {
+                      "annotations": [],
+                      "type": "FabricSqlDatabase",
+                      "typeProperties": {
+                        "workspaceId": "30b4a580-14af-4752-8037-254926ff6c2c",
+                        "artifactId": "[parameters('watermark-servicenow')]"
+                      },
+                      "externalReferences": {
+                        "connection": "3bbcd20d-eccb-4101-bbf9-53c3d7484654"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "parameters": {
+          "tables": {
+            "type": "array",
+            "defaultValue": [
+              {
+                "tableName": "incident"
+              }
+            ]
+          }
+        },
+        "lastModifiedByObjectId": "c5e9d0fa-826b-44b2-a2df-7884a8254a4b",
+        "lastPublishTime": "2026-03-31T23:07:31Z"
+      },
+      "dependsOn": []
+    }
+  ]
+}
