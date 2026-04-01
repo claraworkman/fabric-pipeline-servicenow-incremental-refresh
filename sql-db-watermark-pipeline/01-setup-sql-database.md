@@ -71,13 +71,13 @@ This stored procedure is called by the pipeline after each successful Copy Activ
 ```sql
 CREATE PROCEDURE dbo.usp_UpdateWatermark
     @tableName      NVARCHAR(128),
-    @watermarkValue DATETIME2
+    @watermarkValue NVARCHAR(50)
 AS
 BEGIN
     MERGE dbo.watermark_tracking AS target
     USING (
         SELECT @tableName AS table_name, 
-               @watermarkValue AS watermark_value
+               CAST(@watermarkValue AS DATETIME2) AS watermark_value
     ) AS source
     ON target.table_name = source.table_name
     WHEN MATCHED THEN 
