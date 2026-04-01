@@ -325,7 +325,8 @@ WHERE table_name = 'incident';
 -- Reset all watermarks
 UPDATE dbo.watermark_tracking SET watermark_value = '1970-01-01 00:00:00';
 ```
-https://github.com/claraworkman/fabric-pipeline-servicenow-incremental-refresh
+Disclaimer: The attached diagrams and code are provided AS IS without warranty of any kind and should not be interpreted as an offer or commitment on the part of Microsoft, and Microsoft cannot guarantee the accuracy of any information presented. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED, IN THIS DIAGRAM(s) CODE SAMPLE(s).
+
 ---
 
 ## License
