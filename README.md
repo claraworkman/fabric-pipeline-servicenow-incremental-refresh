@@ -98,6 +98,14 @@ flowchart TB
 
 Import the pipeline directly into a Fabric workspace via Git Integration.
 
+> **At a glance — 6 steps:**
+> 1. Create a Fabric workspace
+> 2. Connect the workspace to this GitHub repo (`fabric-export` branch)
+> 3. Run the SQL scripts to set up the watermark schema
+> 4. Create a ServiceNow connection
+> 5. Point each pipeline activity to your workspace items
+> 6. Test the pipeline
+
 ### Step 1: Create a Fabric workspace
 
 1. Go to [app.fabric.microsoft.com](https://app.fabric.microsoft.com) → **Workspaces** → **+ New workspace**
@@ -120,10 +128,10 @@ Import the pipeline directly into a Fabric workspace via Git Integration.
 
 ### Step 3: Set up the SQL Database
 
-After import, the SQL Database structure exists but you need to create the schema:
+Git Integration imports the SQL Database project, but the watermark table and stored procedure may not deploy automatically. You'll verify they exist and create them if needed.
 
 1. Open `watermark-servicenow` in the Fabric portal
-2. Click **New Query** and run:
+2. Expand **Tables** in the left panel — if `dbo.watermark_tracking` already exists, skip to sub-step 4 (seed data). Otherwise, click **New Query** and run:
 
 ```sql
 CREATE TABLE dbo.watermark_tracking (
@@ -132,7 +140,7 @@ CREATE TABLE dbo.watermark_tracking (
 );
 ```
 
-3. Create the stored procedure:
+3. Check if the stored procedure exists by expanding **Programmability → Stored Procedures** in the left panel. If `dbo.usp_UpdateWatermark` is missing, create it:
 
 ```sql
 CREATE PROCEDURE dbo.usp_UpdateWatermark
@@ -165,9 +173,10 @@ VALUES ('incident', '1970-01-01 00:00:00');
 ### Step 4: Create the ServiceNow connection
 
 1. Open the imported pipeline `ServiceNow-Ingestion-SQL-Watermark`
-2. The Copy Activity source will show a broken connection
-3. Click the connection dropdown → **+ New connection**
-4. Configure:
+2. Click the **Copy Activity** (`CopyServiceNowData`) → go to the **Source** tab
+3. You'll see a broken connection indicator — **this is expected** (connections are workspace-specific and not stored in Git)
+4. Click the connection dropdown → **+ New connection**
+5. Configure:
 
 | Field | Value |
 |---|---|
@@ -179,14 +188,16 @@ VALUES ('incident', '1970-01-01 00:00:00');
 
 ### Step 5: Update connection references
 
-Open the pipeline and re-point each activity to your workspace items:
+Each activity needs to point to your workspace items. Click on each activity inside the ForEach, then update the connection on the appropriate tab:
 
-| Activity | Connection To Update |
-|---|---|
-| **GetWatermark** (Lookup) | Select your `watermark-servicenow` SQL Database |
-| **Copy ServiceNow Data** (Source) | Select your ServiceNow connection |
-| **Copy ServiceNow Data** (Destination) | Select your `servicenow_data` Lakehouse |
-| **Update Watermark** (Stored Procedure) | Select your `watermark-servicenow` SQL Database |
+| Activity | Tab | What to select |
+|---|---|---|
+| **GetWatermark** (Lookup) | Settings → Connection | Your `watermark-servicenow` SQL Database |
+| **CopyServiceNowData** (Copy) | Source → Connection | Your ServiceNow connection (created in Step 4) |
+| **CopyServiceNowData** (Copy) | Destination → Connection | Your `servicenow_data` Lakehouse |
+| **UpdateWatermark** (Stored Procedure) | Settings → Connection | Your `watermark-servicenow` SQL Database |
+
+> **Tip:** Click the ForEach activity, then click the **pencil icon** (✏️) to open it and access the inner activities.
 
 ### Step 6: Test
 
