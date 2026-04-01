@@ -82,9 +82,6 @@ flowchart TB
 | `ServiceNow-Ingestion-SQL-Watermark.DataPipeline/` | Data Pipeline | The main incremental ingestion pipeline |
 | `watermark-servicenow.SQLDatabase/` | SQL Database | Watermark tracking table and stored procedure |
 | `servicenow_data.Lakehouse/` | Lakehouse | Destination for ServiceNow data |
-| `noteboo_servicenow.Lakehouse/` | Lakehouse | Alternative notebook-based Lakehouse |
-| `watermark-tracker.Notebook/` | Notebook | Alternative notebook-based watermark approach |
-| `ServiceNow-Notebook-Ingestion.DataPipeline/` | Data Pipeline | Alternative notebook-based pipeline |
 
 ### Documentation
 
