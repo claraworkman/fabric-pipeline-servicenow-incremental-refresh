@@ -64,7 +64,7 @@ flowchart TB
 
 | Requirement | Details |
 |---|---|
-| **Fabric workspace** | With F64 or higher capacity attached |
+| **Fabric workspace** | With F2 or higher capacity attached |
 | **Fabric Lakehouse** | Will be created during setup (e.g., `servicenow_data`) |
 | **Fabric SQL Database** | Will be created during setup (e.g., `watermark-servicenow`) |
 | **ServiceNow instance** | Developer or production instance with REST API access |
