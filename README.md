@@ -87,10 +87,10 @@ flowchart TB
 
 | File | Description |
 |---|---|
-| `sql-db-watermark-pipeline/01-setup-sql-database.md` | Create the SQL Database, watermark table, and stored procedure |
-| `sql-db-watermark-pipeline/02-setup-pipeline.md` | Step-by-step pipeline activity configuration |
-| `sql-db-watermark-pipeline/03-testing-and-validation.md` | Testing methodology: single-table → multi-table |
-| `sql-db-watermark-pipeline/04-troubleshooting.md` | Common errors and fixes |
+| `manual instructions - building the pipelines in fabric/01-setup-sql-database.md` | Create the SQL Database, watermark table, and stored procedure |
+| `manual instructions - building the pipelines in fabric/02-setup-pipeline.md` | Step-by-step pipeline activity configuration |
+| `manual instructions - building the pipelines in fabric/03-testing-and-validation.md` | Testing methodology: single-table → multi-table |
+| `manual instructions - building the pipelines in fabric/04-troubleshooting.md` | Common errors and fixes |
 
 ---
 
@@ -201,10 +201,10 @@ Open the pipeline and re-point each activity to your workspace items:
 
 If you prefer to build the pipeline from scratch instead of importing from Git, follow the step-by-step guides:
 
-1. [01-setup-sql-database.md](sql-db-watermark-pipeline/01-setup-sql-database.md) — Create SQL Database, watermark table, stored procedure
-2. [02-setup-pipeline.md](sql-db-watermark-pipeline/02-setup-pipeline.md) — Build the pipeline activities from scratch
-3. [03-testing-and-validation.md](sql-db-watermark-pipeline/03-testing-and-validation.md) — Test single-table, then scale to many
-4. [04-troubleshooting.md](sql-db-watermark-pipeline/04-troubleshooting.md) — Common errors and fixes
+1. [01-setup-sql-database.md](manual%20instructions%20-%20building%20the%20pipelines%20in%20fabric/01-setup-sql-database.md) — Create SQL Database, watermark table, stored procedure
+2. [02-setup-pipeline.md](manual%20instructions%20-%20building%20the%20pipelines%20in%20fabric/02-setup-pipeline.md) — Build the pipeline activities from scratch
+3. [03-testing-and-validation.md](manual%20instructions%20-%20building%20the%20pipelines%20in%20fabric/03-testing-and-validation.md) — Test single-table, then scale to many
+4. [04-troubleshooting.md](manual%20instructions%20-%20building%20the%20pipelines%20in%20fabric/04-troubleshooting.md) — Common errors and fixes
 
 ---
 
@@ -292,7 +292,7 @@ Add a schedule trigger in the pipeline toolbar:
 | ServiceNow connection fails | Check URL format (`https://<instance>.service-now.com`), auth type (Basic), account not locked |
 | Hidden tab character in table_name | Check with `LEN(table_name)` — delete and re-insert clean row |
 
-See [04-troubleshooting.md](sql-db-watermark-pipeline/04-troubleshooting.md) for detailed explanations of each error.
+See [04-troubleshooting.md](manual%20instructions%20-%20building%20the%20pipelines%20in%20fabric/04-troubleshooting.md) for detailed explanations of each error.
 
 ---
 
