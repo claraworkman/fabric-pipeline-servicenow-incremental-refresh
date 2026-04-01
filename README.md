@@ -8,50 +8,52 @@ Incremental ingestion from ServiceNow into a Fabric Lakehouse using the **Micros
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Fabric Workspace                                     │
-│                                                                             │
-│  ┌──────────────┐    ┌──────────────────────┐    ┌───────────────────────┐  │
-│  │  SQL Database │    │  Data Pipeline        │    │  Lakehouse            │  │
-│  │  (watermark   │◄──│  ServiceNow-Ingestion  │──►│  servicenow_data      │  │
-│  │   tracking)   │    │  -SQL-Watermark        │    │                       │  │
-│  └──────────────┘    └──────────────────────┘    └───────────────────────┘  │
-│                               │                                             │
-└───────────────────────────────┼─────────────────────────────────────────────┘
-                                │
-                                ▼
-                    ┌──────────────────────┐
-                    │  ServiceNow Instance  │
-                    │  (REST API / V2)      │
-                    └──────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Workspace["Fabric Workspace"]
+        direction TB
+        
+        subgraph Pipeline["Data Pipeline: ServiceNow-Ingestion"]
+            Param["Parameter: tables<br/>[incident, change_request, ...]"]
+            
+            subgraph ForEach["ForEach: Looping Through Tables"]
+                direction LR
+                
+                Lookup["🔍 Lookup<br/>GetWatermark<br/>──────────<br/>SQL Database<br/>SELECT watermark<br/>FROM watermark_tracking<br/>WHERE table_name = ..."]
+                
+                Copy["📦 Copy Activity<br/>CopyServiceNowData<br/>──────────<br/>Source: ServiceNow V2<br/>Filter: sys_updated_on &gt; watermark<br/>Sink: Lakehouse Upsert<br/>Key: sys_id"]
+                
+                SP["✏️ Stored Procedure<br/>UpdateWatermark<br/>──────────<br/>SQL Database<br/>usp_UpdateWatermark<br/>tableName + utcNow()"]
+                
+                Lookup -->|"Succeeded+Failed"| Copy
+                Copy -->|"Succeeded only"| SP
+            end
+            
+            Param --> ForEach
+        end
+        
+        SQLDB[("SQL Database<br/>watermark-servicenow")]
+        LH[("Lakehouse<br/>servicenow_data")]
+    end
+    
+    SN["☁️ ServiceNow<br/>REST API"]
+    
+    SQLDB -.->|"read watermark"| Lookup
+    SP -.->|"write watermark"| SQLDB
+    SN -.->|"filtered rows"| Copy
+    Copy -.->|"upsert on sys_id"| LH
+
+    style Workspace fill:#f0f4ff,stroke:#4472c4,stroke-width:2px
+    style Pipeline fill:#e8f5e9,stroke:#43a047,stroke-width:1px
+    style ForEach fill:#fff8e1,stroke:#f9a825,stroke-width:1px
+    style SQLDB fill:#e3f2fd,stroke:#1976d2
+    style LH fill:#fce4ec,stroke:#c62828
+    style SN fill:#f3e5f5,stroke:#7b1fa2
 ```
 
 ### Pipeline Flow (per table, inside ForEach)
 
 ![Pipeline Flow - ForEach with GetWatermark → Copy ServiceNow Data → Update Watermark](images/pipeline.png)
-
-```
-┌──────────────────┐     ┌─────────────────────────┐     ┌──────────────────┐
-│  1. Lookup       │     │  2. Copy Activity        │     │  3. Stored Proc  │
-│  GetWatermark    │────►│  Copy ServiceNow Data    │────►│  UpdateWatermark │
-│                  │     │                           │     │                  │
-│  Reads last      │     │  Source: ServiceNow V2    │     │  Sets watermark  │
-│  watermark from  │     │  Filter: sys_updated_on   │     │  to utcNow()     │
-│  SQL Database    │     │         >= watermark      │     │  in SQL Database │
-│                  │     │  Sink: Lakehouse Upsert   │     │                  │
-│  Returns:        │     │        on sys_id          │     │  Only runs on    │
-│  timestamp or    │     │                           │     │  Copy SUCCESS    │
-│  1970-01-01      │     │  Creates table if new     │     │                  │
-└──────────────────┘     └─────────────────────────┘     └──────────────────┘
-   Succeeded+Failed              Succeeded only
-```
-
-### Dependency Chain
-
-```
-GetWatermark ──(Succeeded + Failed)──► CopyServiceNowData ──(Succeeded only)──► UpdateWatermark
-```
 
 - **Succeeded + Failed** on the Lookup ensures first runs work even if no watermark row exists yet
 - **Succeeded only** on the Stored Procedure ensures the watermark only advances after data is safely written
