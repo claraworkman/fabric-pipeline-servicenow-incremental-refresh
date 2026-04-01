@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
     "type": "Lakehouse",
-    "displayName": "servicenow_lakehouse_notebook_incremental_refresh_use_case"
+    "displayName": "StagingLakehouseForDataflows_20260331183035"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "0f351f15-bb63-bd81-4c13-ecb3aca8a206"
+    "logicalId": "13fbb1d1-4ea9-9bf9-4d12-cc38f30231a0"
   }
 }
