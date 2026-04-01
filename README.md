@@ -111,10 +111,12 @@ Import the pipeline directly into a Fabric workspace via Git Integration.
    - **Provider:** GitHub
    - **Account:** Create or select a GitHub connection (PAT needs `repo` scope)
    - **Repository:** `fabric-pipeline-servicenow-incremental-refresh`
-   - **Branch:** `main`
+   - **Branch:** `fabric-export` (this branch contains the Fabric-exported item formats required by Git Integration)
    - **Git folder:** `/`
 3. Click **Connect and sync**
 4. When prompted, choose **"Update workspace from Git"** to import all items
+
+> **Why `fabric-export` and not `main`?** Fabric Git Integration requires items in Fabric's internal export format (`.platform` files + specific JSON structures). The `fabric-export` branch contains these Fabric-exported items. The `main` branch includes additional documentation and the same Fabric items.
 
 ### Step 3: Set up the SQL Database
 
